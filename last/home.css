@@ -1,0 +1,41 @@
+button {
+    padding: 15px 25px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button.blue {
+    background-color: #3498db;
+    color:	#C4E1FF;
+    font-size:medium;
+    font-weight:bold;
+}
+button.green {
+    background-color: #7ce1a6;
+    color:	#01814A;
+    font-size:medium;
+    font-weight:bold;
+}
+
+button.yellow{
+   background-color: #d8e1a5;
+    color:#8C8C00;
+    font-size:medium;
+    font-weight:bold;
+}
+button.pink {
+    background-color: #efe3ef;
+    color:	#F00078;
+    font-size:medium;
+    font-weight:bold;
+    float:right;
+ }
+ button.orange {
+    background-color:	#FFD1A4	;
+    color:#FF8000;
+    font-size:medium;
+    font-weight:bold;
+    float:right;
+ }
+

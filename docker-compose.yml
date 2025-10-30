@@ -1,0 +1,57 @@
+name: traffic-api
+services:
+  backend:
+    build: ./backend/traffic-api # 有改過路徑
+    ports:
+      - "8081:8080" # 外部主機端口改為 8081
+    depends_on:
+      # 關鍵：等待 mysql 服務回報「健康」後才啟動
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/my_database_name_202510?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: password_202510
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    volumes:
+      # 將 Python 腳本掛載進去，或直接 COPY 進 Dockerfile
+      #- ./python_scripts:/scripts 
+      # 假設需要讀寫資料檔案
+      - data_volume:/data
+
+  frontend:
+    build: ./frontend
+    ports:
+      # Nginx 容器內部運行在 Port 80。
+      # 我們需要將主機的 3001 映射到容器的 80。
+      - "3001:80"
+    depends_on: #前端會等後端啟動後再啟動
+      - backend
+    environment:
+      REACT_APP_API_URL: http://backend:8080
+      
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3301:3306" # 本地 3361 連到容器 3306
+    environment: # 資安：特別將資料庫密碼存在不同地方，不上傳到git
+      #MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_ROOT_PASSWORD: password_202510
+      MYSQL_DATABASE: my_database_name_202510
+    volumes: # Docker啟動MySQL容器時，會自動執行db資料夾內的.sql腳本
+      - ./db:/docker-entrypoint-initdb.d
+    # ★★★ 新增 healthcheck 設定 ★★★
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# =======================================================
+# 【關鍵修正點】：在文件頂層新增 volumes 區塊來定義命名卷
+# =======================================================    
+volumes:
+  data_volume:
+    # 這裡可以留空，表示使用 Docker 預設的本地驅動
+    # 或者 explicitely 寫 driver: local

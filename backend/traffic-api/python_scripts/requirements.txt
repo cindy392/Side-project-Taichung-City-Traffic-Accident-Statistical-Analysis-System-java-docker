@@ -1,0 +1,6 @@
+# python_scripts/requirements.txt
+pandas
+folium
+requests
+selenium
+webdriver_manager
