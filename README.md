@@ -1,5 +1,3 @@
-# Side-project-Taichung-City-Traffic-Accident-Statistical-Analysis-System-java-docker
-
 # 專案名稱：台中市交通事故分析系統  
 
 ---
