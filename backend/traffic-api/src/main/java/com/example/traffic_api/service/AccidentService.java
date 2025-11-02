@@ -33,10 +33,11 @@ public class AccidentService {
             throw new RuntimeException("Search Python script failed with exit code: " + exitCodeSearch);
         }
         
+        
         // 2. 執行 map.python
         // 假設 map.python 腳本已經被複製到 /scripts/map.python
         // year 和 month 作為命令行參數，供 Python 腳本使用 (sys.argv[1] 和 sys.argv[2])
-        ProcessBuilder pbMap = new ProcessBuilder("python3", "/scripts/map.python", year, month);
+        ProcessBuilder pbMap = new ProcessBuilder("python3", "/scripts/map.py", year, month);
 
         // 設定工作目錄
         pbMap.directory(new File(DATA_DIR));

@@ -64,6 +64,9 @@ WORKDIR /app
 COPY python_scripts /scripts
 COPY python_scripts/requirements.txt /scripts/
 
+# 【暫時新增：複製內含 CSV 檔案的 data 資料夾到 /scripts/data】
+COPY python_scripts/data /scripts/data
+
 # 4. 安裝 Python 依賴 (folium, pandas 等)
 RUN pip3 install --no-cache-dir -r /scripts/requirements.txt
 

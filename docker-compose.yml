@@ -18,6 +18,9 @@ services:
       #- ./python_scripts:/scripts 
       # 假設需要讀寫資料檔案
       - data_volume:/data
+    shm_size: '256m'
+    cap_add:
+      - SYS_ADMIN # 允許啟動子程序，有助於解決沙箱問題
 
   frontend:
     build: ./frontend

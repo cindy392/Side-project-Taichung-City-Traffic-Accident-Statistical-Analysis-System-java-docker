@@ -1,5 +1,7 @@
 package com.example.traffic_api.controller;
 
+//爬蟲->下載csv->生成map.html->前端顯示
+
 import com.example.traffic_api.service.AccidentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,8 @@ public class MapController {
             @RequestParam("year") String year,
             @RequestParam("month") String month,
             HttpServletResponse response) {
+
+        
         
         // 原始 PHP 邏輯: setcookie("year",$year,time()+17280);
         // 在這裡可以用 Spring Session 或 JWT 處理，但簡單起見，我們先著重於業務邏輯。
