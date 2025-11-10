@@ -17,17 +17,32 @@ import sys
 import pandas as pd
 #import Options
 import time
+import requests
 
-
-
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
 # ==========================================================
 # 1. Docker 環境變數設定
 # ==========================================================
 # 在 Docker 環境中，ChromeDriver 應該在 PATH 中或指定絕對路徑
 # 許多 Docker 映像檔（例如 selenium/standalone-chrome）已經包含它，
 # 或者我們使用 /usr/bin/chromedriver，具體取決於您的後端 Dockerfile
-CHROME_DRIVER_PATH = '/usr/bin/chromedriver' 
-DATA_DIR = '/data/' # 輸出檔案必須存到 /data/ Volume 裡
+# CHROME_DRIVER_PATH = '/usr/bin/chromedriver' 
+# DATA_DIR = '/data/' # 輸出檔案必須存到 /data/ Volume 裡
+
+# 本機用
+# 改成本機實際資料夾路徑（跟 AccidentService.java 一致）
+
+# 相對路徑設定 (相對於 search.py)，找到叫data的資料夾
+#DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
+BASE_DIR = os.path.dirname(__file__)
+DATA_DIR = os.path.join(BASE_DIR, "data")
+os.makedirs(DATA_DIR, exist_ok=True)  # 如果不存在就建立資料夾
+
+
+# 設定 ChromeDriver 路徑
+CHROME_DRIVER_PATH = os.path.join(BASE_DIR, "chromedriver.exe")
 
 # ==========================================================
 # 2. WebDriver 設定 (Headless Mode)
@@ -35,7 +50,7 @@ DATA_DIR = '/data/' # 輸出檔案必須存到 /data/ Volume 裡
 # 使用 ChromeOptions 
 #chrome_options = ChromeOptions()
 chrome_options = Options()
-chrome_options.binary_location = "/usr/bin/chromium"
+#chrome_options.binary_location = "/usr/bin/chromium"
 '''chrome_options.add_argument("--headless")
 chrome_options.add_argument("--no-sandbox")        # 必須用於 Docker 環境
 chrome_options.add_argument("--disable-dev-shm-usage") # 必須用於 Docker 環境
@@ -59,18 +74,19 @@ chrome_options.add_argument("--enable-logging")
 chrome_options.add_argument("--v=1")
 chrome_options.add_argument("--disable-setuid-sandbox")
 
+
+
 def run_scraper(year, month):
     try:
         # 嘗試使用指定的驅動路徑啟動 WebDriver
         # 注意：如果您的 Dockerfile 已經將 chromedriver 加入 PATH，可以省略第一個參數
         #driver = webdriver.Chrome(options=chrome_options)
-
         #chrome_options = webdriver.ChromeOptions()
-        #service = Service(ChromeDriverManager().install())
+        service = Service(ChromeDriverManager().install())
         #service = Service('/usr/bin/chromedriver')
         # chrome_options.add_argument('--headless')  # 暫時先不要 headless
-        #driver = webdriver.Chrome(service=service, options=chrome_options)
-        driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome(service=service, options=chrome_options)
+        #driver = webdriver.Chrome(options=chrome_options)
         print("ChromeDriver 啟動成功！")
 
     except Exception as e:
@@ -99,11 +115,11 @@ def run_scraper(year, month):
         driver.get(default_url)
         print(f"Page title: {driver.title}")
 
-        # 定位並輸入搜尋字串
+        # 定位並輸入搜尋字串 #後來有改過名稱
         element = driver.find_element(By.ID, "searchbar-input")
         element.send_keys(text)
 
-        # 按搜尋鍵
+        # 按搜尋鍵 #後來有改過名稱
         button = driver.find_element(By.CLASS_NAME, 'searchbar-submit-btn')
         button.click()
         
@@ -132,25 +148,37 @@ def run_scraper(year, month):
         driver.get(webname)
         time.sleep(5) # 等待頁面載入下載連結
 
-        # 查詢 CSV 檔的網址
+        # 查詢 CSV 檔的網址 #後來有改過名稱
         download_csv = driver.find_element(By.CSS_SELECTOR, 'a[title="CSV下載檔案"]')
         url = download_csv.get_attribute('href')
         print(f'找到 CSV 下載網址: {url}')
 
         # 下載並寫入檔案到 /data/ Volume
-        response = requests.get(url)
+        # response = requests.get(url)
+
+        #網路慢或 API 回應慢(請求被拒 和 Timeout 或異常處理)
+        # 網路請求下載 CSV
+        headers = {"User-Agent": "Mozilla/5.0"}
+        try:
+            response = requests.get(url, headers=headers, timeout=20)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print("Network error:", e)
+            exit(1)
         
         if response.status_code == 200:
             # 修正：將檔案寫入到 /data/ 目錄
-            filename = os.path.join(DATA_DIR, f"{text}.csv")
+            #filename = os.path.join(DATA_DIR, f"{text}.csv")
+            filename = os.path.join(DATA_DIR, f"{year}{month}.csv")
             
             with open(filename, 'wb') as f:
                 f.write(response.content)
                 
             print(f'CSV 檔案下載完成，儲存於: {filename}')
+            sys.exit(0)  # 成功退出
             
         else:
-            print(f'無法下載 CSV 檔案。HTTP Status Code: {response.status_code}')
+            print(f'download CSV fail。HTTP Status Code: {response.status_code}')
             sys.exit(1) # 下載失敗視為錯誤
 
     except NoSuchElementException:
@@ -158,7 +186,7 @@ def run_scraper(year, month):
         sys.exit(1) # 找不到資料視為錯誤
 
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        print(f"search.py -> An unexpected error occurred: {e}")
         sys.exit(1) # 其他錯誤
 
     finally:
@@ -167,7 +195,7 @@ def run_scraper(year, month):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-                print("Usage: python3 search.py <year> <month>")
+                print("Usage: python search.py <year> <month>")
                 sys.exit(1)
 
     year = str(sys.argv[1])

@@ -11,11 +11,16 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/map")
-@CrossOrigin(origins = "http://localhost:3001") // <-- 允許來自 Port 3001 的請求
+@CrossOrigin(origins = "http://localhost:3000") // <-- 允許來自 Port 3001 的請求
 public class MapController {
 
     @Autowired
     private AccidentService accidentService;
+
+    @GetMapping("/run")
+    public String testRun() {
+        return "MapController 正常運作中！";
+    }
 
     // 處理表單提交 (替代 home_confirm.php)
     @PostMapping("/confirm")

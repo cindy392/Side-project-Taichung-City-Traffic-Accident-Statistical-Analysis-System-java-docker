@@ -17,7 +17,8 @@ services:
       # 將 Python 腳本掛載進去，或直接 COPY 進 Dockerfile
       #- ./python_scripts:/scripts 
       # 假設需要讀寫資料檔案
-      - data_volume:/data
+      #- data_volume:/data
+      - ./data:/data
     shm_size: '256m'
     cap_add:
       - SYS_ADMIN # 允許啟動子程序，有助於解決沙箱問題

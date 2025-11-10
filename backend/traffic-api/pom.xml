@@ -77,6 +77,13 @@
     		<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
 
+		<!-- 連接測試用資料庫h2 -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
 		<!-- JWT 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
